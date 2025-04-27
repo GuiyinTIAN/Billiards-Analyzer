@@ -3,7 +3,7 @@
 A web application that utilizes Yolov5 and LLM to analyze images of billiards tables, providing tactical recommendations for American 9-ball games.
 
 <div style="text-align: center;">
-    <img src="ReadmePicture/Homepage.png" alt="Billiards Analyzer Homepage" />
+    <img src="ReadmePicture/Homepage.png" alt="Billiards Analyzer Homepage" style="max-width: 100%; height: auto;" />
 </div>
 
 ## Features
