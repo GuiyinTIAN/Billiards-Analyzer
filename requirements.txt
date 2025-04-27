@@ -1,0 +1,36 @@
+# Web Framework
+Django==4.2.20
+Pillow==10.3.0  # Image processing support
+
+# Base Dependencies
+numpy>=1.23.5
+opencv-python>=4.1.1
+matplotlib>=3.3
+PyYAML>=5.3.1
+requests>=2.32.2
+scipy>=1.4.1
+tqdm>=4.66.3
+pandas>=1.1.4
+seaborn>=0.11.0
+
+# PyTorch
+torch>=1.8.0  # Choose appropriate version based on your CUDA version
+torchvision>=0.9.0
+
+# YOLOv5 Dependencies
+ultralytics>=8.2.34
+thop>=0.1.1  # FLOPs computation
+psutil  # System resource monitoring
+gitpython>=3.1.30
+# Install YOLOv5 (run in yolov5 directory: pip install .)
+
+# API Client
+openai>=1.0.0  # DeepSeek API support
+python-dotenv>=0.15.0  # Environment variable management
+
+# Development Tools
+setuptools>=70.0.0  # Security fix
+
+# Installation Instructions:
+# 1. Install basic dependencies: pip install -r requirements.txt
+# 2. Install YOLOv5: cd yolov5 && pip install .

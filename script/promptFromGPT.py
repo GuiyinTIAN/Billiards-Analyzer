@@ -283,7 +283,82 @@ class BilliardAngleAnalyzer:
         return f"Touching {', '.join(directions)} cushion(s)"
 
     def generate_analysis_json(self) -> dict:
-        """生成包含分路径阻挡信息的分析数据"""
+        analysis = self.calculate_angles()
+        
+        return {
+            "table_configuration": {
+                "cushion_boundaries": {
+                    "left": round(self.cushions["left"], 1),
+                    "right": round(self.cushions["right"], 1),
+                    "top": round(self.cushions["top"], 1),
+                    "bottom": round(self.cushions["bottom"], 1)
+                },
+                "pockets": [
+                    {
+                        "id": p["id"],
+                        "position_type": p["position"],
+                        "coordinates": [
+                            round(p["center"][0], 1),
+                            round(p["center"][1], 1)
+                        ]
+                    } for p in self.pockets
+                ]
+            },
+            "ball_analysis": [
+                {
+                    "ball_id": ball_name,
+                    "position": [
+                        round(ball_data["center"][0], 1),
+                        round(ball_data["center"][1], 1)
+                    ],
+                    "distance_from_cue": round(
+                        self._distance_between(
+                            self.balls[self.cue_ball]["center"],
+                            ball_data["center"]
+                        ), 1
+                    ),
+                    "cushion_contact": self._format_cushion_status_json(
+                        self._check_cushion_contact(
+                            ball_data["center"],
+                            ball_data["radius"]
+                        )
+                    ),
+                    "target_paths": [
+                        {
+                            "target_pocket_id": pid,
+                            "attack_angle": path_info["angle"],
+                            "distance_to_pocket": round(
+                                self._distance_between(
+                                    ball_data["center"],
+                                    next(
+                                        p["center"] for p in self.pockets 
+                                        if str(p["id"]) == str(pid)
+                                    )
+                                ), 1
+                            ) if any(p["id"] == pid for p in self.pockets) else 0.0,
+                            "path_blockers": {
+                                "cue_to_ball": path_info["blockers"]["cue_to_ball"],
+                                "ball_to_pocket": path_info["blockers"]["ball_to_pocket"]
+                            }
+                        } for pid, path_info in analysis.get(ball_name, {}).items()
+                    ]
+                } for ball_name, ball_data in self.balls.items()
+                if ball_name != self.cue_ball
+            ]
+        }
+
+    def _format_cushion_status_json(self, status: dict) -> dict:
+        return {
+            "is_touching": status["any"],
+            "touching_sides": [
+                side for side in ["left", "right", "top", "bottom"] 
+                if status[side]
+            ],
+            "description": self._format_cushion_status(status)
+        }
+    
+    def generate_analysis_json(self) -> dict:
+        """Generate analysis data containing split-path blocking information"""
         analysis = self.calculate_angles()
         
         return {
@@ -371,44 +446,72 @@ class BilliardAngleAnalyzer:
             } for name, info in self.balls.items()]
         }
 
-    def _format_cushion_status_json(self, status: dict) -> dict:
-        """格式化贴库状态为分析用JSON"""
-        return {
-            "contact_status": status["any"],
-            "contact_sides": [k for k in ["left", "right", "top", "bottom"] if status[k]],
-            "risk_level": "high" if status["any"] else "low"
-        }
+def _format_cushion_status_json(self, status: dict) -> dict:
+    """Format the library status as JSON for analysis."""
+    return {
+        "contact_status": status["any"],
+        "contact_sides": [k for k in ["left", "right", "top", "bottom"] if status[k]],
+        "risk_level": "high" if status["any"] else "low"
+    }
 
+
+# Ensure the existence of the weight directory
+def ensure_weights_dir():
+    """make sure NineBallPocketNoNine/weights directory exists"""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_dir = os.path.dirname(script_dir)  # 更新：获取项目根目录
+    
+    # 使用NineBallPocketNoNine/weights目录
+    weight_dir = os.path.join(project_dir, "NineBallPocketNoNine", "weights")
+    
+    # if the directory does not exist, create it
+    if not os.path.exists(weight_dir):
+        os.makedirs(weight_dir, exist_ok=True)
+        print(f"The weight directory has been created: {weight_dir}")
+    
+    # check if the weight files exist
+    has_weights = False
+    for weight_file in ["best.pt", "last.pt"]:
+        if os.path.exists(os.path.join(weight_dir, weight_file)):
+            has_weights = True
+            break
+    
+    if not has_weights:
+        print(f"Warning: The weight file was not found. Please place the weight file at {weight_dir}")
+        print("The file name should be 'best.pt' or 'last.pt'.")
+
+# Set the default source image
+ensure_weights_dir()
 
 if "BILLIARD_IMAGE_PATH" in os.environ:
-    print(f"使用环境变量指定的图片: {os.environ['BILLIARD_IMAGE_PATH']}")
+    print(f"Use the pictures specified by the environment variables: {os.environ['BILLIARD_IMAGE_PATH']}")
     OPT.source = os.environ["BILLIARD_IMAGE_PATH"]
 else:
-    print(f"使用默认图片: {OPT.source}")
+    print(f"Use the default picture: {OPT.source}")
     
-# 调用main(OPT)一次，避免重复调用
+# If the weight file is specified in the environment variable, set it in OPT
+if "YOLO_WEIGHT_PATH" in os.environ and os.path.exists(os.environ["YOLO_WEIGHT_PATH"]):
+    print(f"Use the weight file specified by the environment variable: {os.environ['YOLO_WEIGHT_PATH']}")
+    OPT.weights = os.environ["YOLO_WEIGHT_PATH"]
+
 results = main(OPT)
 
 has_detections = False
 for result in results:
-    # 检查是否有无检测结果(no_target)或者缺少location字段
     if result.get('command') == 'no_target' or 'location' not in result:
-        # 没有检测到台球，创建一个特殊的JSON
-        print("未检测到台球，创建空分析结果")
+        print("D")
         analysis_json = {
             "error": "no_detections",
-            "message": "未检测到台球。请确保图像包含清晰的台球场景。"
+            "message": "No billiards were detected. Please ensure that the image contains a clear billiards scene."
         }
         
-        # 保存为JSON文件
         with open("billiard_analysis.json", "w", encoding="utf-8") as f:
             json.dump(analysis_json, f, indent=2)
-            print("保存无检测结果JSON完成")
+            print("The JSON without detection results has been saved")
         break
     
     has_detections = True
     
-    # 原有数据准备方式
     data = []
     counter = 0
     for loc, cls, conf in zip(result['location'], result['class'], result['confidence']):
@@ -443,19 +546,16 @@ for result in results:
 
     analysis_json = analyzer.generate_analysis_json()
 
-    # 保存到文件
     with open("billiard_analysis.json", "w") as f:
         json.dump(analysis_json, f, indent=2)
-        print("分析JSON已保存到billiard_analysis.json")
+        print("Analysis JSON saved to billiard_analysis.json")
 
-    # 直接打印
     # print(json.dumps(analysis_json, indent=2))
 
-# 如果遍历结束后仍然没有检测结果
 if not has_detections and not os.path.exists("billiard_analysis.json"):
     analysis_json = {
         "error": "no_detections",
-        "message": "未检测到台球。请确保图像包含清晰的台球场景。"
+        "message": "No billiards were detected. Please ensure that the image contains a clear billiards scene"
     }
     
     with open("billiard_analysis.json", "w", encoding="utf-8") as f:

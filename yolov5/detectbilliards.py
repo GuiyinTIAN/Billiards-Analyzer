@@ -316,10 +316,41 @@ def run(
 
 def parse_opt():
     """Parses command-line arguments for YOLOv5 detection, setting inference options and model configurations."""
-    #r"C:\Users\Michael He\Desktop\Study\DinnarIntern\yolov5-prune\runs\train\exp6\weights\best.pt"
-    # ROOT / r"runs\train\exp6\weights\best.pt"
+    def find_weight_file():
+        # 1. check the environment variables
+        if 'YOLO_WEIGHT_PATH' in os.environ and os.path.exists(os.environ['YOLO_WEIGHT_PATH']):
+            print(f"Use the weight file specified by the environment variable: {os.environ['YOLO_WEIGHT_PATH']}")
+            return os.environ['YOLO_WEIGHT_PATH']
+        
+        # 2. check NineBallPocketNoNine/weights directory
+        nineball_weight_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
+                                           "NineBallPocketNoNine", "weights")
+        
+        # check last.pt first, then best.pt
+        weight_paths = [
+            os.path.join(nineball_weight_dir, "last.pt"),  # last.pt 优先),
+            os.path.join(nineball_weight_dir, "best.pt"),
+        ]
+        
+        # Check whether it exists
+        for path in weight_paths:
+            if os.path.exists(path):
+                print(f"Find the weight file: {path}")
+                return path
+        
+        # if not found, print a warning
+        print(f"Warning: Weight file not found! Please place the weight file in the following directory:")
+        print(f"  - {nineball_weight_dir}")
+        print("The file name should be 'best.pt' or 'last.pt'.")
+        
+        # return the default path even if not found
+        return os.path.join(nineball_weight_dir, "last.pt")
+    
+    # get the weight path
+    weight_path = find_weight_file()
+    
     parser = argparse.ArgumentParser()
-    parser.add_argument("--weights", nargs="+", type=str, default=r"E:\OneDrive - The University of Hong Kong - Connect\2024-2025 HKU CE SOURCE(Y3)\ELEC4544\Project\GroupProject\NineBallPocketNoNine\weights\last.pt", help="model path or triton URL")
+    parser.add_argument("--weights", nargs="+", type=str, default=weight_path, help="model path or triton URL")
     parser.add_argument("--source", type=str, default=r"E:\OneDrive - The University of Hong Kong - Connect\2024-2025 HKU CE SOURCE(Y3)\ELEC4544\Project\GroupProject\Billiards_Analysis\media\detected_1_642d241a-5885-4651-8ee4-8b8386b95237.png", help="file/dir/URL/glob/screen/0(webcam)")
     parser.add_argument("--data", type=str, default=ROOT / "data/coco128.yaml", help="(optional) dataset.yaml pah")
     parser.add_argument("--imgsz", "--img", "--img-size", nargs="+", type=int, default=[640], help="inference size h,w")
@@ -361,7 +392,7 @@ def main(opt):
         pred = result["pred"]
         detectImg = result['im0']
 
-        if not pred[0].shape[0]:  # 跳过无检测结果的帧
+        if not pred[0].shape[0]:
             yield {"command": "no_target", "error": None}
             continue
 

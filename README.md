@@ -1,8 +1,10 @@
-# Billiards Analysis System
+# Billiards Analyzer
 
-An advanced computer vision system that analyzes billiards table images to provide tactical recommendations for American 9-ball games.
+A web application that utilizes Yolov5 and LLM to analyze images of billiards tables, providing tactical recommendations for American 9-ball games.
 
-![Billiards Analysis](Homepage.png)
+<div style="text-align: center;">
+    <img src="Homepage.png" alt="Billiards Analysis" />
+</div>
 
 ## Features
 
@@ -27,13 +29,13 @@ An advanced computer vision system that analyzes billiards table images to provi
 - Python 3.8+
 - PyTorch
 - CUDA-capable GPU (recommended for faster detection)
+- **DeepSeek API Key** (required for tactical analysis)
 
 ### Setup
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/billiards-analysis.git
-   cd billiards-analysis
+   git clone https://github.com/GuiyinTIAN/Billiards-Analyzer.git
    ```
 
 2. Create a virtual environment and activate it:
@@ -41,23 +43,61 @@ An advanced computer vision system that analyzes billiards table images to provi
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
+   or
+   ```
+   conda create -n billiards-env
+   conda activate billiards-env
+   ```
 
 3. Install requirements:
    ```
    pip install -r requirements.txt
    ```
 
-4. Set up the database:
+4. Install YOLOv5 as a local package:
    ```
+   cd yolov5
+   pip install .
+   cd ..
+   ```
+
+5. Prepare weight files if want to use a custom model:
+   - Place the model weight files (`best.pt` or `last.pt`) in the following directory:
+     ```
+     Billiards_Analyzer/NineBallPocketNoNine/weights/
+     ```
+   - The system will prioritize `last.pt`, and if it does not exist, it will use `best.pt`.
+
+6. **Configure DeepSeek API**:
+   - Sign up at [DeepSeek](https://deepseek.com/) to obtain an API key
+   - Open the file `script/Deepseek.py` and replace `<YOUR_API_KEY>` with your actual DeepSeek API key:
+     ```python
+     APIKEY = "your_deepseek_api_key_here"
+     ```
+   - Without a valid API key, the system will only perform visual detection without tactical analysis
+
+7. Set up the database:
+   ```
+   cd Billiards_Analysis
    python manage.py migrate
    ```
 
-5. Run the development server:
+8. Run the development server:
    ```
    python manage.py runserver
    ```
 
-6. Access the application at http://127.0.0.1:8000/
+9. Access the application: http://127.0.0.1:8000/
+
+### About the `pip install .` Command
+
+`pip install .` command will:
+- Install the current directory as a Python package
+- Automatically resolve and install all dependencies
+- Allow direct module imports from anywhere in the project without path concerns
+- Ensure YOLOv5 can correctly load all its components
+
+This command is necessary for YOLOv5 to work properly, as it allows the system to call the detection module from any location.
 
 ## Usage
 
@@ -93,15 +133,18 @@ An advanced computer vision system that analyzes billiards table images to provi
     - `views.py` - Logic for processing uploads and displaying results
     - `templates/` - HTML templates
 - `yolov5/` - YOLOv5 object detection model
-- `promptFromGPT.py` - Geometric analysis of ball positions
-- `Deepseek.py` - AI-powered tactical analysis
+- `script/` - Analysis scripts
+  - `promptFromGPT.py` - Geometric analysis of ball positions
+  - `Deepseek.py` - AI-powered tactical analysis with LLM
+- `NineBallPocketNoNine/weights/` - Directory for model weights
 
 ## Configuration
 
 API keys and other settings can be configured in the environment variables or directly in the relevant files:
 
-- DeepSeek API key in `Deepseek.py`
+- DeepSeek API key in `script/Deepseek.py` (required for tactical recommendations)
 - Detection model configuration in `yolov5/detectbilliards.py`
+- Weight file locations in `NineBallPocketNoNine/weights/`
 
 ## License
 

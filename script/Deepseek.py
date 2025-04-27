@@ -12,22 +12,26 @@ if sys.stdout.encoding != 'utf-8':
 
 json_file_path = 'billiard_analysis.json'
 absolute_path = os.path.abspath(json_file_path)
-print(f"正在读取文件: {absolute_path}")
+print(f"Reading the file: {absolute_path}")
 
 
 with open(json_file_path, 'r', encoding='utf-8') as file:
     data = json.load(file)
 
+# xtract key information for constructing prompts
 table_state = json.dumps(data['table_state'], indent=2)
 balls_analysis = json.dumps(data['balls_analysis'], indent=2)
 key_rule = data['system_context']['rules']
 # print(key_rule)
 
-prompt = f"美式9球游戏中当前台球台状态如下:{table_state}。球的分布信息如下：{balls_analysis}。请严格遵循规则: '{key_rule}'。给我一些击球建议。请在分析完成后给出总结。"
+prompt = f"The current status of the table in the American 9-ball game is as follows:{table_state}.The distribution information of the balls is as follows：{balls_analysis}.Please follow the rules strictly: '{key_rule}'. Give me some suggestions for hitting the ball. Give a summary after all the analysis."
+
+# you need to set your own API key here.
+APIKEY = "<YOUR_API_KEY>"
 
 try:
-    # 为了向后兼容性，可以使用 `https://api.deepseek.com/v1` 作为 `base_url`
-    client = OpenAI(api_key="sk-0f350bf1d05d46dd82c0b99f9524f21e", base_url="https://api.deepseek.com/v1")
+    # for backward compatibility, you can still use `https://api.deepseek.com/v1` as `base_url`.
+    client = OpenAI(api_key=APIKEY, base_url="https://api.deepseek.com/v1")
 
     response = client.chat.completions.create(
         # model="deepseek-reasoner",
@@ -43,12 +47,12 @@ try:
     content = response.choices[0].message.content
     analysis_result_path = "analysis_result.txt"
     absolute_analysis_result_path = os.path.abspath(analysis_result_path)
-    print(f"正在读取分析结果: {absolute_analysis_result_path}")
+    print(f"Reading Analyze Result: {absolute_analysis_result_path}")
     with open("analysis_result.txt", "w", encoding="utf-8") as f:
         f.write(content)
     # print(content)
     
 except Exception as e:
-    print(f"API调用失败: {str(e)}")
+    print(f"API fail to use: {str(e)}")
     with open("analysis_result.txt", "w", encoding="utf-8") as f:
-        f.write(f"分析失败: {str(e)}")
+        f.write(f"Failure to Analyze: {str(e)}")
