@@ -3,7 +3,7 @@
 A web application that utilizes Yolov5 and LLM to analyze images of billiards tables, providing tactical recommendations for American 9-ball games.
 
 <div style="text-align: center;">
-    <img src="Homepage.png" alt="Billiards Analysis" />
+    <img src="ReadmePicture/Homepage.png" alt="Billiards Analyzer Homepage" />
 </div>
 
 ## Features
@@ -21,6 +21,19 @@ A web application that utilizes Yolov5 and LLM to analyze images of billiards ta
 - **Computer Vision**: YOLOv5, OpenCV
 - **AI Analysis**: DeepSeek API
 - **Frontend**: Bootstrap, JavaScript, Markdown rendering
+
+## Project Structure
+
+- `Billiards_Analysis/` - Django project directory
+  - `analysis_app/` - Main application code
+    - `models.py` - Database models for storing images and results
+    - `views.py` - Logic for processing uploads and displaying results
+    - `templates/` - HTML templates
+- `yolov5/` - YOLOv5 object detection model
+- `script/` - Analysis scripts
+  - `promptFromGPT.py` - Geometric analysis of ball positions
+  - `Deepseek.py` - AI-powered tactical analysis with LLM
+- `NineBallPocketNoNine/weights/` - Directory for model weights
 
 ## Installation
 
@@ -51,10 +64,12 @@ A web application that utilizes Yolov5 and LLM to analyze images of billiards ta
 
 3. Install requirements:
    ```
+   # if not in the project directory, navigate to it first
+   cd Billiards_Analyzer
    pip install -r requirements.txt
    ```
 
-4. Install YOLOv5 as a local package:
+4. Back to project directory, Install YOLOv5 as a local package:
    ```
    cd yolov5
    pip install .
@@ -125,18 +140,6 @@ This command is necessary for YOLOv5 to work properly, as it allows the system t
                                          └────────────────┘
 ```
 
-## Project Structure
-
-- `Billiards_Analysis/` - Django project directory
-  - `analysis_app/` - Main application code
-    - `models.py` - Database models for storing images and results
-    - `views.py` - Logic for processing uploads and displaying results
-    - `templates/` - HTML templates
-- `yolov5/` - YOLOv5 object detection model
-- `script/` - Analysis scripts
-  - `promptFromGPT.py` - Geometric analysis of ball positions
-  - `Deepseek.py` - AI-powered tactical analysis with LLM
-- `NineBallPocketNoNine/weights/` - Directory for model weights
 
 ## Configuration
 
