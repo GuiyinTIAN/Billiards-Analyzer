@@ -125,20 +125,6 @@ This command is necessary for YOLOv5 to work properly, as it allows the system t
 
 3. **Admin panel**: Access the admin panel at /admin to reset the database or view analysis records.
 
-## System Architecture
-
-```
-┌─────────────┐     ┌──────────────┐     ┌────────────────┐
-│ Django Web  │─────▶ YOLOv5 Model │─────▶ Angle Analysis │
-│ Interface   │     │ Detection    │     │ & Path Finding │
-└─────────────┘     └──────────────┘     └────────────────┘
-       │                                          │
-       │                                          ▼
-       │                                 ┌────────────────┐
-       └─────────────────────────────────▶ DeepSeek AI   │
-                                         │ Recommendations│
-                                         └────────────────┘
-```
 
 
 ## Configuration
