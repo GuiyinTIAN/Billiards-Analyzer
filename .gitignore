@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Django
+*.log
+*.pot
+*.pyc
+local_settings.py
+db.sqlite3
+media/
+static/admin/
+
+
+billiard_analysis.json
+analysis_result.txt
+yolov5/runs/
+
+.env
+
+.DS_Store
+Thumbs.db
